@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K-고3: 수능 전국 수석 키우기 - 운명의 200일 편</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container" id="appContainer">
+    <!-- 상단 헤더 -->
+    <header class="top-header">
+      <div class="brand-title">
+        <span class="fire-badge">🔥 K-고3</span>
+        <h1>수능 전국 수석 키우기 <span class="sub-badge">운명의 200일 편</span></h1>
+      </div>
+      <div class="header-controls">
+        <button class="icon-btn" id="btnEndingsBook" title="엔딩 도감 보기">
+          🏆 엔딩 도감 <span id="endingCountBadge">0/7</span>
+        </button>
+        <button class="icon-btn" id="btnGuide" title="게임 방법 및 단축키">
+          📖 도움말
+        </button>
+        <button class="icon-btn" id="btnSound" title="효과음 켜기/끄기">
+          🔊 효과음 ON
+        </button>
+        <button class="icon-btn danger-outline" id="btnGiveUp" title="수능 포기 / 새 게임 (단축키 Q)">
+          🏳️ 수능 포기 (Q)
+        </button>
+      </div>
+    </header>
+
+    <!-- 핵심 대시보드 (D-Day, 체력, 종합등수, 장학금) -->
+    <section class="status-dashboard">
+      <!-- D-Day & 모의고사 일정 -->
+      <div class="stat-card dday-card">
+        <div class="stat-header">
+          <span class="stat-label">⏳ 수능까지 남은 시간</span>
+          <span class="hospital-pill" id="hospitalBadge">🏥 입원 0 / 3회</span>
+        </div>
+        <div class="dday-main">
+          <div class="dday-number" id="ddayDisplay">D-200</div>
+          <div class="turn-sub" id="turnSubDisplay">경과: 0일 / 200일 (다음 모의고사: D-160)</div>
+        </div>
+        <div class="timeline-bar-wrap">
+          <div class="timeline-bar-fill" id="timelineFill" style="width: 0%"></div>
+          <div class="milestone m1" title="1차 모의고사 (40일 경과)"><span>D-160</span></div>
+          <div class="milestone m2" title="2차 모의고사 (80일 경과)"><span>D-120</span></div>
+          <div class="milestone m3" title="3차 모의고사 (120일 경과)"><span>D-80</span></div>
+          <div class="milestone m4" title="파이널 모의고사 (160일 경과)"><span>D-40</span></div>
+          <div class="milestone m5" title="대학수학능력시험 (200일)"><span>수능</span></div>
+        </div>
+      </div>
+
+      <!-- 체력 게이지 -->
+      <div class="stat-card hp-card" id="hpCard">
+        <div class="stat-header">
+          <span class="stat-label">🔋 현재 체력</span>
+          <span class="hp-status-badge status-stable" id="hpStatusBadge">안정</span>
+        </div>
+        <div class="hp-value-row">
+          <span class="hp-num" id="hpDisplay">100</span>
+          <span class="hp-max">/ 100</span>
+          <span class="hp-hint" id="hpHintText">공부 시 10~15 소모</span>
+        </div>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="hpBarFill" style="width: 100%"></div>
+          <div class="hp-grid-lines">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 전국 종합 등수 -->
+      <div class="stat-card rank-card">
+        <div class="stat-header">
+          <span class="stat-label">🏆 현재 종합 등수</span>
+          <span class="grade-pill grade-9" id="overallGradeBadge">평균 9등급</span>
+        </div>
+        <div class="big-stat-row">
+          <span class="rank-prefix">전국</span>
+          <span class="big-number" id="overallRankDisplay">1000</span>
+          <span class="rank-suffix">등</span>
+        </div>
+        <div class="stat-subtext" id="activeBuffCountText">활성화된 과목 패시브: 0 / 6개</div>
+      </div>
+
+      <!-- 장학금 (소지금) -->
+      <div class="stat-card money-card" id="moneyCard">
+        <div class="stat-header">
+          <span class="stat-label">💰 보유 장학금</span>
+          <span class="discount-pill hidden" id="discountBadge">영어버프 20% 할인중</span>
+        </div>
+        <div class="big-stat-row">
+          <span class="big-number gold-text" id="moneyDisplay">60</span>
+          <span class="rank-suffix">원</span>
+        </div>
+        <div class="stat-subtext" id="moneySubText">열공 및 모의고사로 장학금 획득</div>
+      </div>
+    </section>
+
+    <!-- 현재 공부 확률 바 & 실시간 알림 배너 -->
+    <section class="prob-and-banner-row">
+      <div class="prob-panel">
+        <div class="prob-header">
+          <span class="prob-title">🎲 현재 공부 성공 확률</span>
+          <div class="prob-legend">
+            <span class="leg-item crit">💥 대박 <b id="probCritText">0%</b></span>
+            <span class="leg-item rise">📈 상승 <b id="probRiseText">50%</b></span>
+            <span class="leg-item maintain">➖ 유지 <b id="probMaintainText">35%</b></span>
+            <span class="leg-item drop">📉 하락 <b id="probDropText">15%</b></span>
+          </div>
+        </div>
+        <div class="prob-stacked-bar">
+          <div class="prob-seg crit" id="barCrit" style="width: 0%" title="대박 확률"></div>
+          <div class="prob-seg rise" id="barRise" style="width: 50%" title="상승 확률"></div>
+          <div class="prob-seg maintain" id="barMaintain" style="width: 35%" title="유지 확률"></div>
+          <div class="prob-seg drop" id="barDrop" style="width: 15%" title="하락 확률"></div>
+        </div>
+      </div>
+
+      <div class="live-feedback-banner" id="liveFeedbackBanner">
+        <span class="feedback-icon" id="feedbackIcon">✏️</span>
+        <div class="feedback-content">
+          <div class="feedback-main" id="feedbackMain">수험 생활이 시작되었습니다! 과목을 선택해 열공하세요.</div>
+          <div class="feedback-sub" id="feedbackSub">과목 등수가 100등 이내에 진입하면 강력한 고유 패시브 버프가 켜집니다!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 메인 게임 그리드: 좌측 과목 열공 (1~6) / 우측 상점 & 휴식 (7~16) -->
+    <main class="game-main-grid">
+      <!-- 좌측: 6대 영역 과목 열공 -->
+      <section class="panel-section subjects-section">
+        <div class="section-title-bar">
+          <h2>📚 과목 집중 열공 <span class="hint-tag">클릭 또는 키보드 [1~6] (1턴 소모)</span></h2>
+          <span class="buff-guide-tag">✨ 100등 이내 달성 시 패시브 자동 ON</span>
+        </div>
+
+        <div class="subjects-grid" id="subjectsGrid">
+          <!-- JS에서 6개 과목 카드 렌더링 -->
+        </div>
+
+        <!-- 최근 수험 일지 (로그) -->
+        <div class="study-log-box">
+          <div class="log-header">
+            <span>📋 수험 일지 (최근 기록)</span>
+            <span class="log-count" id="logTurnIndicator">D-200</span>
+          </div>
+          <ul class="log-list" id="studyLogList"></ul>
+        </div>
+      </section>
+
+      <!-- 우측: 상점 & 휴식 & 영구 장비 -->
+      <section class="panel-section shop-section">
+        <!-- 소모품 & 휴식 (7~11, 16) -->
+        <div class="shop-group">
+          <div class="section-title-bar">
+            <h2>🛒 소모품 & 휴식 <span class="hint-tag">낮잠만 1턴 소모, 나머지는 즉시 발동!</span></h2>
+          </div>
+          <div class="shop-items-grid" id="consumablesGrid">
+            <!-- JS에서 7~11, 16번 아이템 렌더링 -->
+          </div>
+        </div>
+
+        <!-- 영구 장비 (12~15) -->
+        <div class="shop-group">
+          <div class="section-title-bar">
+            <h2>🎒 영구 장착 아이템 <span class="hint-tag">1회 구매 시 수능날까지 영구 적용</span></h2>
+          </div>
+          <div class="equipment-items-grid" id="equipmentGrid">
+            <!-- JS에서 12~15번 아이템 렌더링 -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================= 모달 창 모음 ================= -->
+
+  <!-- 1. 오프닝 / 게임 방법 모달 -->
+  <div class="modal-overlay" id="introModal">
+    <div class="modal-card intro-modal-card">
+      <div class="modal-badge">🔥 K-고3 수험생 시뮬레이션</div>
+      <h2>수능 전국 수석 키우기<br><span>운명의 200일 편</span></h2>
+      <div class="intro-rules-box">
+        <div class="rule-item">
+          <span class="rule-icon">⏳</span>
+          <div>
+            <strong>수능까지 딱 200일 (200턴)</strong>
+            <p>과목 공부나 낮잠을 자면 1일이 지나갑니다. 상점 아이템 구매와 치킨 섭취는 시간을 소모하지 않습니다!</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <span class="rule-icon">✨</span>
+          <div>
+            <strong>과목별 100등 이내 진입 시 고유 패시브 ON!</strong>
+            <p>영어(상점 20% 할인), 수학(장학금 2배), 국어(성적 상승량 1.5배), 한국사(하락 확률 0%), 과학(드링크 효율 2배), 사회(과외 효율 2배)를 전략적으로 먼저 뚫어보세요.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <span class="rule-icon">📝</span>
+          <div>
+            <strong>40일마다 전국 연합 학력평가 실시</strong>
+            <p>D-160, D-120, D-80, D-40에 성적표가 배부되며 종합 등수에 따라 대규모 장학금 또는 용돈 삭감이 발생합니다.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <span class="rule-icon">🏥</span>
+          <div>
+            <strong>체력 관리와 번아웃 주의!</strong>
+            <p>체력이 20 이하가 되면 <b>번아웃</b>(효율 반감 & 졸음)이 오며, 체력이 0이 되면 <b>응급실</b>(-200원, 3일 소모)에 실려갑니다. <b>3회 입원 시 즉시 게임 오버 엔딩!</b></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="primary-cta-btn" id="btnStartGame">🔥 수험 생활 시작하기 (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 돌발 이벤트 모달 -->
+  <div class="modal-overlay hidden" id="eventModal">
+    <div class="modal-card event-modal-card">
+      <div class="modal-badge warning-badge">⚠️ 돌발 이벤트 발생!</div>
+      <div class="event-illust" id="eventEmoji">😈</div>
+      <h3 id="eventTitle">친구의 유혹</h3>
+      <p class="event-desc" id="eventDesc">친구: "야, 오늘 PC방 각? 롤 5인팟 한 명 빈다!"</p>
+
+      <div class="event-choices" id="eventChoicesBox">
+        <button class="choice-btn" id="btnEventChoice1">
+          <span class="choice-num">[1]</span>
+          <div class="choice-text-wrap">
+            <strong id="choice1Title">콜! 스트레스나 풀자</strong>
+            <span class="choice-effect" id="choice1Effect">체력 +40, 전과목 30등 하락</span>
+          </div>
+        </button>
+        <button class="choice-btn" id="btnEventChoice2">
+          <span class="choice-num">[2]</span>
+          <div class="choice-text-wrap">
+            <strong id="choice2Title">미안, 난 대학 가야 해</strong>
+            <span class="choice-effect" id="choice2Effect">체력 -15, 용돈 +50원</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- 선택 결과 영역 -->
+      <div class="event-result-box hidden" id="eventResultBox">
+        <p class="event-result-text" id="eventResultText"></p>
+        <button class="primary-cta-btn" id="btnEventConfirm">확인 (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 전국 모의고사 성적표 모달 -->
+  <div class="modal-overlay hidden" id="mockExamModal">
+    <div class="modal-card exam-modal-card">
+      <div class="modal-badge exam-badge">🔔 전국 연합 학력평가 성적 통지표</div>
+      <h3 id="mockExamTitle">제 1차 전국 연합 학력평가 (D-160)</h3>
+      <div class="exam-overall-box">
+        <span>현재 전국 종합 등수</span>
+        <strong id="mockOverallRank">전국 450등 (5등급)</strong>
+      </div>
+      <div class="exam-subjects-mini" id="mockSubjectsTable">
+        <!-- 과목별 미니 성적표 -->
+      </div>
+      <div class="exam-eval-box" id="mockEvalBox">
+        <div class="eval-emoji" id="mockEvalEmoji">👏</div>
+        <div class="eval-text">
+          <strong id="mockEvalTitle">[성적 우수] 명문대 합격 안정권입니다!</strong>
+          <p id="mockEvalReward">장학금 +400원 지급!</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="primary-cta-btn" id="btnMockConfirm">성적표 확인 완료 (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 응급실 입원 알림 모달 -->
+  <div class="modal-overlay hidden" id="hospitalModal">
+    <div class="modal-card hospital-modal-card">
+      <div class="modal-badge danger-badge">🚨 응급 상황 발생!</div>
+      <div class="event-illust">🚑</div>
+      <h3>삐용삐용! 과로로 쓰러져 응급실로 실려갑니다!!</h3>
+      <p class="hospital-desc" id="hospitalDesc">
+        무리한 수험 생활로 결국 쓰러졌습니다.<br>
+        치료비로 <b>장학금 200원</b>이 차감되고, 입원 치료로 <b>3일(3턴)</b>이 소요되었습니다.
+      </p>
+      <div class="hospital-stats-pill" id="hospitalCountAlert">
+        누적 응급실 입원: 1 / 3회 (3회 입원 시 즉시 요양병원 엔딩)
+      </div>
+      <div class="modal-actions">
+        <button class="primary-cta-btn danger-btn" id="btnHospitalConfirm">퇴원 후 복귀하기 (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 수능 D-Day 최종 엔딩 모달 -->
+  <div class="modal-overlay hidden" id="endingModal">
+    <div class="modal-card ending-modal-card">
+      <div class="modal-badge ending-badge" id="endingHeaderBadge">🎓 수능 D-Day 최종 결과</div>
+      <div class="ending-icon-big" id="endingBigIcon">👑</div>
+      <h2 id="endingTitle">[엔딩: 전설의 수능 만점자]</h2>
+      <p class="ending-story" id="endingStory">
+        서울대 의예과 수석 합격! 뉴스 인터뷰: '교과서 위주로 충실히 공부했어요^^'
+      </p>
+
+      <div class="ending-summary-box">
+        <div class="summary-stat">
+          <span>최종 종합 등수</span>
+          <strong id="endingFinalRank">전국 1등</strong>
+        </div>
+        <div class="summary-stat">
+          <span>총 소요 일수</span>
+          <strong id="endingTotalTurns">200일</strong>
+        </div>
+        <div class="summary-stat">
+          <span>응급실 입원</span>
+          <strong id="endingHospitalCount">0회</strong>
+        </div>
+      </div>
+
+      <div class="exam-subjects-mini" id="endingSubjectsTable">
+        <!-- 최종 수능 과목별 성적표 -->
+      </div>
+
+      <div class="modal-actions ending-actions">
+        <button class="secondary-cta-btn" id="btnOpenBookFromEnding">🏆 엔딩 도감 확인</button>
+        <button class="primary-cta-btn" id="btnRestartGame">🔄 새로운 수험 생활 시작하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 엔딩 도감 모달 -->
+  <div class="modal-overlay hidden" id="collectionModal">
+    <div class="modal-card collection-modal-card">
+      <div class="modal-header-row">
+        <h3>🏆 멀티 엔딩 컬렉션 도감</h3>
+        <button class="close-x-btn" id="btnCloseCollection">✕</button>
+      </div>
+      <p class="collection-sub">다양한 전략으로 7가지 멀티 엔딩을 모두 수집해 보세요!</p>
+      <div class="collection-grid" id="collectionGrid">
+        <!-- JS에서 7개 엔딩 카드 렌더링 -->
+      </div>
+      <div class="modal-actions">
+        <button class="primary-cta-btn" id="btnConfirmCollection">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
